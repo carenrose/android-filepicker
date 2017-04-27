@@ -33,34 +33,42 @@ import java.util.Locale;
 public class ExtensionFilter implements FileFilter {
     private final String[] validExtensions;
     private DialogProperties properties;
+    private boolean hideHidden;
 
+    /* 
+     * Constructor
+     */
     public ExtensionFilter(DialogProperties properties) {
-        if(properties.extensions!=null) {
+        if (properties.extensions!=null) {
             this.validExtensions = properties.extensions;
-        }
-        else {
+        } else {
             this.validExtensions = new String[]{""};
         }
         this.properties=properties;
+        
+        hideHidden = true;
     }
 
     /**Function to filter files based on defined rules.
      */
     @Override
     public boolean accept(File file) {
-        //All directories are added in the least that can be read by the Application
-        if (file.isDirectory()&&file.canRead())
-        {   return true;
+        // hide hidden files/dirs (dotfiles)
+        if (hideHidden && file.getName().startsWith(".")) { 
+            return false;
         }
-        else if(properties.selection_type==DialogConfigs.DIR_SELECT)
-        {   /*  True for files, If the selection type is Directory type, ie.
+        
+        // All directories are added in the least that can be read by the Application
+        if (file.isDirectory() && file.canRead())  {
+            return true;
+        } else if(properties.selection_type==DialogConfigs.DIR_SELECT) {
+            /*  True for files, If the selection type is Directory type, ie.
              *  Only directory has to be selected from the list, then all files are
              *  ignored.
              */
             return false;
-        }
-        else
-        {   /*  Check whether name of the file ends with the extension. Added if it
+        } else {
+            /*  Check whether name of the file ends with the extension. Added if it
              *  does.
              */
             String name = file.getName().toLowerCase(Locale.getDefault());
@@ -71,5 +79,12 @@ public class ExtensionFilter implements FileFilter {
             }
         }
         return false;
+    }
+    
+    public void setHideHidden(boolean hide) {
+        this.hideHidden = hide;
+    }
+    public boolean hidesHiddenFiles() {
+        return this.hideHidden;
     }
 }
